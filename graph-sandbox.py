@@ -102,21 +102,21 @@ class GraphSandbox:
 
             newEdge = Edge(
                 -1,
+                canvas,
                 self.startVertex,
                 endVertex
             )
 
             self.AddElement(newEdge)
 
-            newEdge.draw(self.canvas)
-            
             #reset start vertex for next run
             self.startVertex = None
         elif not overlapping:
             newVertex = Vertex(
                 -1,
                 Point(event.x, event.y),
-                0
+                0,
+                canvas
             )
 
             self.AddElement(newVertex)

@@ -8,18 +8,24 @@ from vertex import VERTEX_RADIUS
 ARC_RADIUS = VERTEX_RADIUS
 
 class Edge(Element):
-    def __init__(self, id, startVertex, endVertex = None):
+    def __init__(self, id, canvas, startVertex, endVertex = None):
         Element.__init__(self, id)
+        self.canvas = canvas
         self.start = startVertex
         self.end = endVertex
         self.isLoop = self.end is None or self.end == self.start
 
+        self.offsetStartPoint = None
+        self.offsetEndPoint = None
+
         if self.isLoop and self.end is None:
             self.end = self.start
 
+        self.draw(self.canvas)
+
         #add to edge list of vertex
-        self.start.edges.append(self)
-        self.end.edges.append(self)
+        self.start.addEdge(self)
+        self.end.addEdge(self)
 
     def __str__(self):
         return "Edge(id: {}, cid: {}, start: {}, end: {}, isLoop: {})".format(self.id, self.cid, self.start, self.end, self.isLoop)
@@ -41,10 +47,10 @@ class Edge(Element):
             )
         else:
             self.cid = canvas.create_line(
-                self.start.center.x,
-                self.start.center.y,
-                self.end.center.x,
-                self.end.center.y,
+                self.start.center.x if self.offsetStartPoint is None else self.offsetStartPoint.x,
+                self.start.center.y if self.offsetStartPoint is None else self.offsetStartPoint.y,
+                self.end.center.x if self.offsetEndPoint is None else self.offsetEndPoint.x,
+                self.end.center.y if self.offsetEndPoint is None else self.offsetEndPoint.y,
                 fill=EDGE_FILL_COLOR,
                 activefill=EDGE_ACTIVE_FILL_COLOR,
                 width=EDGE_THICKNESS
@@ -62,8 +68,15 @@ class Edge(Element):
         else:
             canvas.coords(
                 self.cid,
-                self.start.center.x,
-                self.start.center.y,
-                self.end.center.x,
-                self.end.center.y
+                self.start.center.x if self.offsetStartPoint is None else self.offsetStartPoint.x,
+                self.start.center.y if self.offsetStartPoint is None else self.offsetStartPoint.y,
+                self.end.center.x if self.offsetEndPoint is None else self.offsetEndPoint.x,
+                self.end.center.y if self.offsetEndPoint is None else self.offsetEndPoint.y
             )
+
+    def delete(self, canvas):
+        res1 = self.start.delEdge(self)
+        res2 = self.end.delEdge(self)
+        print("res1:{} res2{}".format(res1, res2))
+        if  res1 and res2:
+            Element.delete(self, canvas)
