@@ -9,11 +9,13 @@ from tkinter import *
 from point import Point
 from vertex import Vertex
 from edge import Edge
+from graph import Graph
 
 class GraphSandbox:
     def __init__(self, root, canvas):
         self.root = root
         self.canvas = canvas
+        self.graph = Graph()
         self.vertices = []
         self.edges = []
 
@@ -41,38 +43,18 @@ class GraphSandbox:
 
         return None
 
-    def AddElement(self, element):
-        if type(element) is Vertex:
-            newId = 0 if len(self.vertices) == 0 else self.vertices[-1].id + 1
-            element.id = newId
-            element.label.labelText = newId
-            self.vertices.append(element)
-
-        elif type(element) is Edge:
-            newId = 0 if len(self.edges) == 0 else self.edges[-1].id + 1
-            element.id = newId
-            self.edges.append(element)
-
     def DeleteElement(self, cid):
         for vertex in self.vertices:
             if vertex.cid == cid:
+                self.graph.delVertex(vertex.id)
                 self.vertices.remove(vertex)
-                vertex.delete(self.canvas)
-                self.FixVertexIds()
+                vertex.delete()
 
         for edge in self.edges:
             if edge.cid == cid:
+                self.graph.delEdge(edge.start.id, edge.end.id)
                 self.edges.remove(edge)
-                edge.delete(self.canvas)
-
-    def FixVertexIds(self):
-        i = 0
-        for vertex in self.vertices:
-            vertex.id = i
-            vertex.label.labelText = i
-            vertex.update(self.canvas)
-            i+=1
-        
+                edge.delete()        
 
     def handleLeftClick(self, event):
         '''
@@ -95,33 +77,18 @@ class GraphSandbox:
 
         elif overlapping and self.startVertex:
             #starting point is already there make this the endpoint
-            endVertex = self.SearchElementsByCid(overlapping[0])
+            self.endVertex = self.SearchElementsByCid(overlapping[0])
             
-            if type(endVertex) is not Vertex:
+            if type(self.endVertex) is not Vertex:
+                self.endVertex = None
                 return #must be a vertex to connect an edge
 
-            newEdge = Edge(
-                -1,
-                canvas,
-                self.startVertex,
-                endVertex
-            )
+            self.addEdge(event)
 
-            self.AddElement(newEdge)
-
-            #reset start vertex for next run
-            self.startVertex = None
         elif not overlapping:
-            newVertex = Vertex(
-                -1,
-                Point(event.x, event.y),
-                0,
-                canvas
-            )
+            self.addVertex(event)
 
-            self.AddElement(newVertex)
-
-            newVertex.draw(self.canvas)
+        print(self.graph)
 
     def handleRightClick(self, event):
         overlapping = canvas.find_overlapping(event.x, event.y, event.x, event.y)
@@ -129,6 +96,7 @@ class GraphSandbox:
         if overlapping:
             for cid in overlapping:
                 self.DeleteElement(cid)
+        print(self.graph)
 
     def handleLeftClickDrag(self, event):
         #if we are already moving then dont search for the vertex again
@@ -153,6 +121,35 @@ class GraphSandbox:
             #mitigate accidental line creation
             self.startVertex = None
             self.vertexToMove = None
+
+    def addVertex(self, event):
+        vId = self.graph.addVertex()
+
+        newVertex = Vertex(
+            vId,
+            Point(event.x, event.y),
+            self.canvas
+        )
+
+        self.vertices.append(newVertex)
+        newVertex.draw()
+    
+    def addEdge(self, event):
+        self.graph.addEdge(self.startVertex.id, self.endVertex.id)
+        newEdge = Edge(
+            -1,
+            canvas,
+            self.startVertex,
+            self.endVertex
+        )
+
+        self.edges.append(newEdge)
+
+        newEdge.draw()
+
+        #reset start vertex for next run
+        self.startVertex = None
+        self.endVertex = None
 
 root = Tk()
 canvas = Canvas(root, background=BACKGROUND_COLOR)

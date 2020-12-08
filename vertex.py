@@ -12,45 +12,28 @@ class Vertex(Element):
         self,
         id,
         center,
-        degree,
         canvas,
         color = VERTEX_FILL_COLOR
     ):
         Element.__init__(self, id)
         self.center = center
-        self.degree = degree
         self.color = color
-        self.edgeGroups = []
         self.canvas = canvas
+        self.degree = 0
+        self.edgeCids = []
         self.label = Label(id, id, Point(center.x + VERTEX_RADIUS, center.y - VERTEX_RADIUS))
 
     def __str__(self):
-        return "Vertex(id: {}, cid: {}, center: {}, degree: {}, color: {}, edges: {})".format(self.id, self.cid, self.center, self.degree, self.color, self.edgeGroups)
+        #return "Vertex(id: {}, cid: {}, center: {}, degree: {}, color: {}, edges: {})".format(self.id, self.cid, self.center, self.degree, self.color, self.edgeCids)
+        return str(self.id)
 
-    def addEdge(self, edge):
-        for group in self.edgeGroups:
-            if group.addEdge(edge):
-                return
-        
-        newGroup = EdgeGroup(0, edge.start, edge.end)
-        newGroup.addEdge(edge)
+    def setId(self, newId):
+        self.id = newId
+        self.label.labelText = newId
 
-        self.edgeGroups.append(newGroup)
-
-        self.update(self.canvas)
-
-    def delEdge(self, edge):
-        for group in self.edgeGroups:
-            if group.delEdge(edge):
-                print("succesfully deleted edge")
-                self.update(self.canvas)
-                return True
-
-        return False
-
-    def draw(self, canvas):
-        canvas.delete(self.cid)
-        self.cid = canvas.create_oval(
+    def draw(self):
+        self.canvas.delete(self.cid)
+        self.cid = self.canvas.create_oval(
             self.center.x - VERTEX_RADIUS,
             self.center.y - VERTEX_RADIUS,
             self.center.x + VERTEX_RADIUS,
@@ -58,10 +41,10 @@ class Vertex(Element):
             fill=self.color,
             activefill=CIRCLE_ACTIVE_FILL_COLOR
         )
-        self.label.draw(canvas)
+        self.label.draw(self.canvas)
 
-    def update(self, canvas):
-        canvas.coords(
+    def update(self):
+        self.canvas.coords(
             self.cid,
             self.center.x - VERTEX_RADIUS,
             self.center.y - VERTEX_RADIUS,
@@ -69,12 +52,8 @@ class Vertex(Element):
             self.center.y + VERTEX_RADIUS
         )
         self.label.point = Point(self.center.x + VERTEX_RADIUS, self.center.y - VERTEX_RADIUS)
-        self.label.update(canvas)
-        for group in self.edgeGroups:
-            group.update(canvas)
+        self.label.update(self.canvas)
         
-    def delete(self, canvas):
-        Element.delete(self, canvas)
-        self.label.delete(canvas)
-        for group in self.edgeGroups:
-            group.delete(canvas)
+    def delete(self):
+        Element.delete(self, self.canvas)
+        self.label.delete(self.canvas)
