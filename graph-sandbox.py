@@ -12,9 +12,10 @@ from edge import Edge
 from graph import Graph
 
 class GraphSandbox:
-    def __init__(self, root, canvas):
+    def __init__(self, root, canvas, text):
         self.root = root
         self.canvas = canvas
+        self.text = text
         self.graph = Graph()
         self.vertices = []
         self.edges = []
@@ -24,6 +25,9 @@ class GraphSandbox:
         self.vertexToMove = None
 
         root.title('Graph Sandbox') #adds title to the window
+
+        self.updateAnalytics()
+        self.text.pack(fill=X)
 
         self.canvas.bind('<Button-1>', self.handleLeftClick) #Handle left click
         self.canvas.bind('<Button-2>', None) #Handle center click
@@ -53,8 +57,8 @@ class GraphSandbox:
         for edge in self.edges:
             if edge.cid == cid:
                 self.graph.delEdge(edge.start.id, edge.end.id)
-                self.edges.remove(edge)
-                edge.delete()        
+                edge.initiateDelete()
+                self.edges.remove(edge) 
 
     def handleLeftClick(self, event):
         '''
@@ -89,6 +93,8 @@ class GraphSandbox:
             self.addVertex(event)
 
         print(self.graph)
+                
+        self.updateAnalytics()
 
     def handleRightClick(self, event):
         overlapping = canvas.find_overlapping(event.x, event.y, event.x, event.y)
@@ -97,12 +103,14 @@ class GraphSandbox:
             for cid in overlapping:
                 self.DeleteElement(cid)
         print(self.graph)
+                
+        self.updateAnalytics()
 
     def handleLeftClickDrag(self, event):
         #if we are already moving then dont search for the vertex again
         if self.vertexToMove:
             self.vertexToMove.center = Point(event.x, event.y)
-            self.vertexToMove.update(canvas)
+            self.vertexToMove.update()
         else:
             overlapping = canvas.find_overlapping(event.x, event.y, event.x, event.y)
             print(str(overlapping))
@@ -114,7 +122,9 @@ class GraphSandbox:
                     return
                 
                 self.vertexToMove.center = Point(event.x, event.y)
-                self.vertexToMove.update(canvas)
+                self.vertexToMove.update()
+
+        self.updateAnalytics()
 
     def handleLeftClickRelease(self, event):
         if self.vertexToMove:
@@ -151,7 +161,16 @@ class GraphSandbox:
         self.startVertex = None
         self.endVertex = None
 
+    def updateAnalytics(self):
+        readings = dict()
+        readings['count_v'] = self.graph.count_vertices()
+        readings['count_e'] = self.graph.count_edges()
+
+        self.text.delete('1.0',END)
+        self.text.insert(INSERT, "vertices: {}, edges: {}".format(readings['count_v'], readings['count_e']))
+
 root = Tk()
+text = Text(root, height=1, bg=BACKGROUND_COLOR, fg='red')
 canvas = Canvas(root, background=BACKGROUND_COLOR)
-GraphSandbox(root, canvas)
+GraphSandbox(root, canvas, text)
 root.mainloop() #to keep the window up

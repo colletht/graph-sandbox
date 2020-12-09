@@ -25,6 +25,8 @@ class Graph:
     def delVertex(self, vertex):
         if vertex in self.graph:
             del self.graph[vertex]
+            for key in self.graph:
+                self.graph[key] = list(filter((vertex).__ne__, self.graph[key]))
             self.availableIds.append(vertex)
             return True
         return False
@@ -37,7 +39,9 @@ class Graph:
             else:
                 #otherwise we add to both
                 self.graph[start].append(end)
-                self.graph[end].append(start)
+
+                if start != end:
+                    self.graph[end].append(start)
             return True
         return False
 
@@ -48,14 +52,19 @@ class Graph:
                 self.graph[start].remove(end)
             else:
                 #else remove both orders in graph
+                print("removing {} from {}".format(end, start))
                 self.graph[start].remove(end)
-                self.graph[end].remove(start)
+                if end != start:
+                    self.graph[end].remove(start)
             return True
         return False
 
     def vertices(self):
         return list(self.graph.keys())
     
+    def count_vertices(self):
+        return len(self.vertices())
+
     def edges(self):
         eDict = dict()
         for key in self.graph:
@@ -75,6 +84,10 @@ class Graph:
                             eDict[(key, vertex)] += 1
         return eDict
     
+    def count_edges(self):
+        e = self.edges()
+        return sum(item[-1] for item in e.items())
+
     def degree(self, vertex = None):
         if vertex:
             return self.__singleDegree(vertex)
@@ -89,7 +102,11 @@ class Graph:
             deg = 0
 
             for key in self.graph:
-                deg += self.graph[key].count(vertex)
+                incr = self.graph[key].count(vertex)
+                if key == vertex:
+                    #account for loops. count twice towards degree
+                    incr *= 2
+                deg += incr
             
             return deg
 

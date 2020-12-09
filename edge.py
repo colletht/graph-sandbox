@@ -10,6 +10,7 @@ ARC_RADIUS = VERTEX_RADIUS
 class Edge(Element):
     def __init__(self, id, canvas, startVertex, endVertex = None):
         Element.__init__(self, id)
+        self.cid = None
         self.canvas = canvas
         self.start = startVertex
         self.end = endVertex
@@ -22,6 +23,11 @@ class Edge(Element):
             self.end = self.start
 
         #add to edge list of vertex
+        self.start.addEdge(self)
+
+        if not self.isLoop:
+            self.end.addEdge(self)
+
     def __str__(self):
         return "Edge(id: {}, cid: {}, start: {}, end: {}, isLoop: {})".format(self.id, self.cid, self.start, self.end, self.isLoop)
 
@@ -69,5 +75,12 @@ class Edge(Element):
                 self.end.center.y if self.offsetEndPoint is None else self.offsetEndPoint.y
             )
 
-    def delete(self):
-        Element.delete(self, self.canvas)
+    def initiateDelete(self, vertexInitiated = None):
+        if vertexInitiated is self.start:
+            self.end.delEdge(self)
+        elif vertexInitiated is self.end:
+            self.start.delEdge(self)
+        else:
+            self.start.delEdge(self)
+            self.end.delEdge(self)
+

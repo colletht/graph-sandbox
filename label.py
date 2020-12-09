@@ -5,12 +5,13 @@ class Label(Element):
         self,
         id,
         labelText,
-        point
+        point,
+        color = 'green'
     ):
         Element.__init__(self, id)
         self.cid = None
         self.labelText = labelText
-        self.color = 'green'
+        self.color = color
         self.point = point
 
     def draw(self, canvas):

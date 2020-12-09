@@ -12,16 +12,12 @@ class EdgeGroup(Element):
     then dictate how the edges are displayed and edited along
     with deleted
     '''
-    def __init__(self, id, startVertex, endVertex):
+    def __init__(self, id, startVertex, endVertex, canvas):
         Element.__init__(self, id)
 
         self.start = startVertex
         self.end = endVertex
-        self.slope = None
-        self.startYIntercept = None
-        self.endYIntercept = None
-        self.startXIntercept = None
-        self.endXIntercept = None
+        self.canvas = canvas
         self.orthUnitVect = None
         self.isLoop = self.start is self.end
         self.edges = []
@@ -67,28 +63,36 @@ class EdgeGroup(Element):
 
     def delEdge(self, edge):
         for e in self.edges:
-            print("e.cid=={}, edge.cid=={}".format(e.cid, edge.cid))
             if e.cid == edge.cid:
-                print("about to delete edge")
                 self.edges.remove(e)
+                e.delete(self.canvas)
                 return True
         return False
 
-    def draw(self, canvas):
+    def draw(self):
         for edge in self.edges:
             if edge.cid is None:
-                edge.draw(canvas)
+                edge.draw()
             else:
-                edge.update(canvas)
+                edge.update()
         
-    def update(self, canvas):
+    def update(self):
         self.redistributeEdges()
 
         for edge in self.edges:
-            edge.update(canvas)
+            if edge.cid is None:
+                edge.draw()
+            else:
+                edge.update()
 
-    def delete(self, canvas):
-        Element.delete(self, canvas)
+    def delete(self, vertexInitiated):
+        Element.delete(self, self.canvas)
         for edge in self.edges:
-            edge.delete(canvas)
+            if vertexInitiated is edge.start:
+                edge.end.delEdge(edge)
+                edge.end.delGroup(self)
+            else:
+                edge.start.delEdge(edge)
+                edge.start.delGroup(self)
+            edge.delete(self.canvas)
     
