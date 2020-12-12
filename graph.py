@@ -1,3 +1,5 @@
+import bisect
+
 class Graph:
     def __init__(self, isDirected = False):
         self.graph = dict()
@@ -27,7 +29,7 @@ class Graph:
             del self.graph[vertex]
             for key in self.graph:
                 self.graph[key] = list(filter((vertex).__ne__, self.graph[key]))
-            self.availableIds.append(vertex)
+            bisect.insort(self.availableIds, vertex)
             return True
         return False
 
