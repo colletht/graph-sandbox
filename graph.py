@@ -96,6 +96,87 @@ class Graph:
         else:
             return self.__totalDegree()
     
+    def components(self):
+        component_list = []
+        for vertex in self.graph:
+            tmp = self.__reachable_from(vertex)
+            if tmp not in component_list:
+                component_list.append(tmp)
+
+        return component_list
+
+    def is_bipartite(self):
+        if len(self.graph.keys()) == 0:
+            return None
+
+        red = set()
+        blue = set()
+        done = False
+        add_to_red = False
+
+        # A graph is bipartite if all its components are bipartite
+        for component in self.components():
+            #initialize for next component
+            red = set()
+            blue = set()
+            done = False
+            add_to_red = False
+            
+            red.add(list(component)[0])
+
+            #check if component is bipartite
+            while not done:
+                if add_to_red:
+                    for v in blue:
+                        for neighbor in self.graph[v]:
+                            red.add(neighbor)
+                else:
+                    for v in red:
+                        for neighbor in self.graph[v]:
+                            blue.add(neighbor)
+
+                done = red.union(blue) == component
+                add_to_red = not add_to_red
+
+            #after completion of the above loop, we need one more iteration to ensure that any group polution will be evident
+            if add_to_red:
+                for v in blue:
+                    for neighbor in self.graph[v]:
+                        red.add(neighbor)
+            else:
+                for v in red:
+                    for neighbor in self.graph[v]:
+                        blue.add(neighbor)
+
+            # If any vertices are in both blue and red then the graph is not bipartite
+            if red.intersection(blue) != set():
+                return False
+
+        return True
+
+    def __valid_coloring(self, colors):
+        if colors > len(self.graph):
+            print("Cannot have coloring with more colors than there are vertices. Colors {} vs Vertices {}".format(colors, len(self.graph)))
+
+        color_sets = [set() for _ in range(0, colors)]
+        vertex = list(self.graph.keys)[0]
+
+    def __reachable_from(self, vertex, cur_set=None):
+        if cur_set is None:
+            cur_set = set()
+
+        if vertex not in cur_set:
+            cur_set.add(vertex)
+
+        adjacent = self.graph[vertex]
+
+        for v in adjacent:
+            if v not in cur_set:
+                cur_set.add(v)
+                cur_set.union(self.__reachable_from(v, cur_set))
+        
+        return cur_set
+
     def __singleDegree(self, vertex):
             #vertex specified, find degree of specific vertex
             if vertex not in self.graph:

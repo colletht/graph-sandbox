@@ -8,13 +8,15 @@ from vertex import VERTEX_RADIUS
 ARC_RADIUS = VERTEX_RADIUS
 
 class Edge(Element):
-    def __init__(self, id, canvas, startVertex, endVertex = None):
+    def __init__(self, id, canvas, startVertex, endVertex = None, directed = False):
         Element.__init__(self, id)
         self.cid = None
         self.canvas = canvas
         self.start = startVertex
         self.end = endVertex
         self.isLoop = self.end is None or self.end == self.start
+        self.directed = directed
+        self.arrows = []
 
         self.offsetStartPoint = None
         self.offsetEndPoint = None
@@ -56,6 +58,7 @@ class Edge(Element):
                 activefill=EDGE_ACTIVE_FILL_COLOR,
                 width=EDGE_THICKNESS
             )
+            
 
     def update(self):
         if self.isLoop:

@@ -165,9 +165,19 @@ class GraphSandbox:
         readings = dict()
         readings['count_v'] = self.graph.count_vertices()
         readings['count_e'] = self.graph.count_edges()
+        readings['components'] = self.graph.components()
+        readings['is_bipartite'] = self.graph.is_bipartite()
 
         self.text.delete('1.0',END)
-        self.text.insert(INSERT, "vertices: {}, edges: {}".format(readings['count_v'], readings['count_e']))
+        self.text.insert(
+            INSERT,
+            "vertices: {}, edges: {}, is bipartite: {}, number of components: {}, components: {}".format(
+                readings['count_v'],
+                readings['count_e'],
+                readings['is_bipartite'],
+                len(readings['components']),
+                readings['components'])
+        )
 
 root = Tk()
 text = Text(root, height=1, bg=BACKGROUND_COLOR, fg='red')
