@@ -1,10 +1,15 @@
 import bisect
+import copy
 
 class Graph:
-    def __init__(self, isDirected = False):
-        self.graph = dict()
+    def __init__(self, isDirected = False, graph=None):
+        if graph:
+            self.graph = copy.deepcopy(graph.graph)
+            self.isDirected = graph.isDirected
+        else:
+            self.graph = dict()
+            self.isDirected = isDirected
         self.availableIds = []
-        self.isDirected = isDirected
     
     def __str__(self):
         print(self.edges())
@@ -153,6 +158,19 @@ class Graph:
                 return False
 
         return True
+
+    def bridges(self):
+        edges = self.edges()
+        component_count = len(self.components())
+        bridges = []
+
+        for edge in edges:
+            test_graph = Graph(graph=self)
+            test_graph.delEdge(*edge)
+            if len(test_graph.components()) > component_count:
+                bridges.append(edge)
+        
+        return bridges
 
     def __valid_coloring(self, colors):
         if colors > len(self.graph):

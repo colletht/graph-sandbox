@@ -167,16 +167,19 @@ class GraphSandbox:
         readings['count_e'] = self.graph.count_edges()
         readings['components'] = self.graph.components()
         readings['is_bipartite'] = self.graph.is_bipartite()
+        readings['bridges'] = self.graph.bridges()
 
         self.text.delete('1.0',END)
         self.text.insert(
             INSERT,
-            "vertices: {}, edges: {}, is bipartite: {}, number of components: {}, components: {}".format(
+            "vertices: {}, edges: {}, is bipartite: {}, number of components: {}, components: {}, bridges: {}".format(
                 readings['count_v'],
                 readings['count_e'],
                 readings['is_bipartite'],
                 len(readings['components']),
-                readings['components'])
+                readings['components'],
+                readings['bridges']
+            )
         )
 
 root = Tk()
