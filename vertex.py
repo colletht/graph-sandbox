@@ -40,6 +40,13 @@ class Vertex(Element):
     def addEdge(self, edge):
         for group in self.edgeGroups:
             if group.addEdge(edge):
+                print("Adding to existing group")
+                if edge.isLoop:
+                    self.setDegree(self.degree+2)
+                else:
+                    self.setDegree(self.degree+1)
+
+                self.update()
                 return
         
         newGroup = EdgeGroup(0, edge.start, edge.end, self.canvas)
@@ -57,13 +64,10 @@ class Vertex(Element):
     def delEdge(self, edge):
         for group in self.edgeGroups:
             if group.delEdge(edge):
-                print("succesfully deleted edge. VertexId: {} Degree: {}".format(self.id, self.degree))
                 if edge.isLoop:
                     self.setDegree(self.degree-2)
                 else:
                     self.setDegree(self.degree-1)
-
-                print("new degree: {}".format(self.degree))
 
                 self.update()
                 return True
@@ -106,8 +110,12 @@ class Vertex(Element):
             group.update()
         
     def delete(self):
+        cids_to_delete = []
         Element.delete(self, self.canvas)
         self.label.delete(self.canvas)
         self.degreeLabel.delete(self.canvas)
         for group in self.edgeGroups:
+            cids_to_delete += group.edge_cids()
             group.delete(self)
+        
+        return cids_to_delete

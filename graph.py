@@ -59,7 +59,6 @@ class Graph:
                 self.graph[start].remove(end)
             else:
                 #else remove both orders in graph
-                print("removing {} from {}".format(end, start))
                 self.graph[start].remove(end)
                 if end != start:
                     self.graph[end].remove(start)

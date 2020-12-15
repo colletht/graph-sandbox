@@ -19,6 +19,7 @@ class GraphSandbox:
         self.graph = Graph()
         self.vertices = []
         self.edges = []
+        self.directed = False
 
         #status variables
         self.startVertex = None
@@ -34,6 +35,7 @@ class GraphSandbox:
         self.canvas.bind('<Button-3>', self.handleRightClick) #Handle right click
         self.canvas.bind('<B1-Motion>', self.handleLeftClickDrag)
         self.canvas.bind('<ButtonRelease-1>', self.handleLeftClickRelease)
+        self.root.bind('<D>', self.toggleDirected)
         self.canvas.pack(fill=BOTH, expand=1)
 
     def SearchElementsByCid(self, cid):
@@ -52,13 +54,18 @@ class GraphSandbox:
             if vertex.cid == cid:
                 self.graph.delVertex(vertex.id)
                 self.vertices.remove(vertex)
-                vertex.delete()
+                edges_to_remove = vertex.delete()
+                print(edges_to_remove)
+                for cid in edges_to_remove:
+                    self.DeleteElement(cid)
+                return
 
         for edge in self.edges:
             if edge.cid == cid:
+                self.edges.remove(edge) 
                 self.graph.delEdge(edge.start.id, edge.end.id)
                 edge.initiateDelete()
-                self.edges.remove(edge) 
+                return
 
     def handleLeftClick(self, event):
         '''
@@ -150,7 +157,8 @@ class GraphSandbox:
             -1,
             canvas,
             self.startVertex,
-            self.endVertex
+            self.endVertex,
+            self.directed
         )
 
         self.edges.append(newEdge)
@@ -160,6 +168,14 @@ class GraphSandbox:
         #reset start vertex for next run
         self.startVertex = None
         self.endVertex = None
+
+    def toggleDirected(self, event):
+        self.directed = not self.directed
+
+        print([e for e in self.edges])
+
+        for edge in self.edges:
+            edge.setDirected(self.directed)
 
     def updateAnalytics(self):
         readings = dict()
@@ -183,7 +199,7 @@ class GraphSandbox:
         )
 
 root = Tk()
-text = Text(root, height=1, bg=BACKGROUND_COLOR, fg='red')
+text = Text(root, height=1, bg=BACKGROUND_COLOR, fg='red', font=('typeface',16))
 canvas = Canvas(root, background=BACKGROUND_COLOR)
 GraphSandbox(root, canvas, text)
 root.mainloop() #to keep the window up

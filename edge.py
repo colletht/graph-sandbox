@@ -4,6 +4,8 @@ EDGE_ACTIVE_FILL_COLOR = 'red'
 
 from element import Element
 from vertex import VERTEX_RADIUS
+from arrowhead import ArrowHead
+from point import Point
 
 ARC_RADIUS = VERTEX_RADIUS
 
@@ -16,10 +18,10 @@ class Edge(Element):
         self.end = endVertex
         self.isLoop = self.end is None or self.end == self.start
         self.directed = directed
-        self.arrows = []
+        self.arrowhead = ArrowHead(self.canvas, self.start, self.end)
 
-        self.offsetStartPoint = None
-        self.offsetEndPoint = None
+        self.offsetStartPoint = Point(0,0)
+        self.offsetEndPoint = Point(0,0)
 
         if self.isLoop and self.end is None:
             self.end = self.start
@@ -32,6 +34,19 @@ class Edge(Element):
 
     def __str__(self):
         return "Edge(id: {}, cid: {}, start: {}, end: {}, isLoop: {})".format(self.id, self.cid, self.start, self.end, self.isLoop)
+
+    def setDirected(self, directed):
+        self.directed = directed
+        if self.directed:
+            self.arrowhead.update()
+        else:
+            self.arrowhead.delete()
+
+    def setOffset(self, offset_start, offset_end):
+        self.offsetStartPoint = offset_start
+        self.offsetEndPoint = offset_end
+
+        self.arrowhead.offset_point = offset_end
 
     def draw(self):
         self.canvas.delete(self.cid)
@@ -50,14 +65,16 @@ class Edge(Element):
             )
         else:
             self.cid = self.canvas.create_line(
-                self.start.center.x if self.offsetStartPoint is None else self.offsetStartPoint.x,
-                self.start.center.y if self.offsetStartPoint is None else self.offsetStartPoint.y,
-                self.end.center.x if self.offsetEndPoint is None else self.offsetEndPoint.x,
-                self.end.center.y if self.offsetEndPoint is None else self.offsetEndPoint.y,
+                self.start.center.x + self.offsetStartPoint.x,
+                self.start.center.y + self.offsetStartPoint.y,
+                self.end.center.x + self.offsetEndPoint.x,
+                self.end.center.y + self.offsetEndPoint.y,
                 fill=EDGE_FILL_COLOR,
                 activefill=EDGE_ACTIVE_FILL_COLOR,
                 width=EDGE_THICKNESS
             )
+        if self.directed:
+            self.arrowhead.draw()
             
 
     def update(self):
@@ -72,13 +89,20 @@ class Edge(Element):
         else:
             self.canvas.coords(
                 self.cid,
-                self.start.center.x if self.offsetStartPoint is None else self.offsetStartPoint.x,
-                self.start.center.y if self.offsetStartPoint is None else self.offsetStartPoint.y,
-                self.end.center.x if self.offsetEndPoint is None else self.offsetEndPoint.x,
-                self.end.center.y if self.offsetEndPoint is None else self.offsetEndPoint.y
+                self.start.center.x + self.offsetStartPoint.x,
+                self.start.center.y + self.offsetStartPoint.y,
+                self.end.center.x + self.offsetEndPoint.x,
+                self.end.center.y + self.offsetEndPoint.y
             )
+        if self.directed:
+            self.arrowhead.update()
+
+    def delete(self):
+        self.arrowhead.delete()
+        Element.delete(self, self.canvas)
 
     def initiateDelete(self, vertexInitiated = None):
+        self.arrowhead.delete()
         if vertexInitiated is self.start:
             self.end.delEdge(self)
         elif vertexInitiated is self.end:

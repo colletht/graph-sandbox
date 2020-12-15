@@ -24,6 +24,9 @@ class EdgeGroup(Element):
 
         self.updateOrthogonalLines()
 
+    def edge_cids(self):
+        return list(filter(lambda x: x is not None, [e.cid for e in self.edges]))
+
     def updateOrthogonalLines(self):
         if self.isLoop:
             return
@@ -37,18 +40,20 @@ class EdgeGroup(Element):
         return (edge.start is self.start and edge.end is self.end) or (edge.start is self.end and edge.end is self.start)
 
     def redistributeEdges(self):
-        if self.isLoop:
+        if self.isLoop or len(self.edges) <= 1:
             return
 
         self.updateOrthogonalLines()
-        edge_count = len(self.edges)-1
+        edge_count = len(self.edges)
 
         offset_start = -(edge_count*EDGE_OFFSET)/2
 
         for i in range(0, edge_count):
             tmp_edge = self.edges[i]
-            tmp_edge.offsetStartPoint = tmp_edge.start.center + self.orthUnitVect.scalar(offset_start)
-            tmp_edge.offsetEndPoint = tmp_edge.end.center + self.orthUnitVect.scalar(offset_start)
+            tmp_edge.setOffset(
+                self.orthUnitVect.scalar(offset_start),
+                self.orthUnitVect.scalar(offset_start)
+            )
 
             offset_start += EDGE_OFFSET
 
@@ -60,12 +65,13 @@ class EdgeGroup(Element):
         self.edges.append(edge)
 
         self.redistributeEdges()
+        return True
 
     def delEdge(self, edge):
         for e in self.edges:
             if e.cid == edge.cid:
                 self.edges.remove(e)
-                e.delete(self.canvas)
+                e.delete()
                 return True
         return False
 
@@ -88,11 +94,16 @@ class EdgeGroup(Element):
     def delete(self, vertexInitiated):
         Element.delete(self, self.canvas)
         for edge in self.edges:
+            edge.arrowhead.delete()
+            edge.delete()
             if vertexInitiated is edge.start:
                 edge.end.delEdge(edge)
-                edge.end.delGroup(self)
             else:
                 edge.start.delEdge(edge)
-                edge.start.delGroup(self)
-            edge.delete(self.canvas)
+        
+        if vertexInitiated is self.start:
+            edge.end.delGroup(self)
+        else:
+            edge.start.delGroup(self)
+
     
