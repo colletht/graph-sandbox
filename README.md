@@ -1,7 +1,7 @@
 # Graph Sandbox
 
 ## What?
-This is a rough little graph sandbox written using python and tkinter. It includes functionality for quick creation of theoretical graphs and provides some analysis/computation on the given graphs. Check out the [How To](##How-To) section to learn how to use it! Or check out the [Features](##Features) section to learn about what all the app supports. Finally the [Structure](##structure) section gives some detail about the code structure.
+This is a rough little graph sandbox written using python and tkinter. It includes functionality for quick creation of theoretical graphs and provides some analysis/computation on the given graphs. Check out the [How To](#How-To) section to learn how to use it! Or check out the [Features](#Features) section to learn about what all the app supports. Finally the [Structure](#structure) section gives some detail about the code structure.
 
 ## How To
 * **Create a Vertex:** Left click anywhere on the canvas.
